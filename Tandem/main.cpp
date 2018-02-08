@@ -47,56 +47,6 @@ int code(char c) {
 
 typedef vector<int> vii;
 
-
-void calcInverted(const string& line) {
-    vii shingled;
-    vii ishingled;
-    
-    int MASK = (1 << (M * 2)) - 1;
-    int x = 0;
-    int ix = 0;
-    for (int i = 0; i < M; ++i) {
-        x = (x << 2 | code(line[i])) & MASK;
-        ix = (ix | (code(line[i]) << (2 * i) )) & MASK;
-    }
-    for (int i = M; i < line.length(); ++i) {
-        shingled.push_back(x);
-        ishingled.push_back(ix);
-        x = (x << 2 | code(line[i])) & MASK;
-        ix = (ix >> 2 | (code(line[i]) << (2 * (M - 1)) )) & MASK;
-    }
-    shingled.push_back(x);
-    ishingled.push_back(ix);
-//    cout << line << endl;
-//    for (int i = 0; i < shingled.size(); ++i) {
-//        cout << shingled[i] << " = " << decode(shingled[i]) << " - " << ishingled[i] << " = " << decode(ishingled[i])<< endl;
-//    }
-    
-    
-    int mstart = 0;
-    int msize = -1;
-    for (int i = 0; i < shingled.size() - M; ++i) {
-        if (shingled[i] == ishingled[i + M]) {
-            int size = 0;
-            while (i - size >= 0 && i + M + size < shingled.size() && shingled[i - size] == ishingled[i + M + size]) {
-                ++size;
-            }
-            --size;
-            if (size > msize) {
-                msize = size + M;
-                mstart = i - size;
-            }
-        }
-    }
-    
-    cout << mstart << " " << msize << " " << msize << endl;
-    
-    cout << line.substr(mstart, msize) << endl;
-    cout << line.substr(mstart + msize, msize) << endl;
-    
-    
-}
-
 void calcDirect(const std::string& line) {
     unordered_map<int, vii> hash;
     vii shingled;
@@ -108,7 +58,6 @@ void calcDirect(const std::string& line) {
         x = (x << 2 | code(line[i])) & MASK;
     }
     for (int i = M; i < line.length(); ++i) {
-        // current hash is x
         shingled.push_back(x);
         hash[x].push_back(i - M);
         x = (x << 2 | code(line[i])) & MASK;
@@ -116,7 +65,6 @@ void calcDirect(const std::string& line) {
     unordered_map<int, int> len;
     for (unordered_map<int, vii>::const_iterator it = hash.begin(); it != hash.end(); ++it) {
         if (it->second.size() == 2) {
-//            cout << "$$ "<< it->second[1] - it->second[0] << " " << shingled[it->second[0]] << " " << shingled[it->second[1]] << endl;
             len[it->second[1] - it->second[0]] ++;
         }
     }
@@ -127,26 +75,63 @@ void calcDirect(const std::string& line) {
     }
     // need to get the biggest distances
     sort(len_s.begin(), len_s.end());
-    for (int i = 0; i < 5; ++i) {
-        cout << len_s[i].first << " " << len_s[i].second << endl;
+    for (int i = 0; i < 50; ++i) {
+//        cout << len_s[i].first << " " << len_s[i].second << endl;
     }
-    // Get TOP
-    int size = len_s[0].second;
-//    cout << "SIZE: " << size << endl;
-    // XXX: check  -len_s[0].first > size
+    // CASE OF ONE TOP
+    if (0) {
+        int size = len_s[0].second;
+    //    cout << "SIZE: " << size << endl;
+        // XXX: check  -len_s[0].first > size
+        
+        vii l;
+        for (int ind = 0; ind < shingled.size(); ++ind) {
+            if (ind + size < shingled.size() && shingled[ind] == shingled[ind + size]) {
+                l.push_back(ind);
+            }
+        }
+        sort(l.begin(), l.end());
+    //    for (int i = 0; i < l.size(); ++i) {
+    //        cout << " " << l[i];
+    //    }
+    //    cout << endl;
+        cout << *l.begin() << " " << size << " " << size << endl;
+    }
     
-    vii l;
-    for (int ind = 0; ind < shingled.size(); ++ind) {
-        if (ind + size < shingled.size() && shingled[ind] == shingled[ind + size]) {
-            l.push_back(ind);
+    // LEVENSTEIN DISTANCE
+    
+    vii vm;
+    for (int i = 0; i < 30; ++i) {
+        // TODO: 30 -- strange constant
+        if (-len_s[i].first > 30) {
+            vm.push_back(len_s[i].second);
         }
     }
-    sort(l.begin(), l.end());
-//    for (int i = 0; i < l.size(); ++i) {
-//        cout << " " << l[i];
-//    }
-//    cout << endl;
-    cout << *l.begin() << " " << size << " " << size << endl;
+    sort(vm.begin(), vm.end());
+
+    for (int j = vm.size() - 1; j >= 0 ; --j) {
+        for (int i = 0; i < shingled.size(); ++i) {
+            if (shingled[i] == shingled[i + vm[j]]) {
+                // CHECK as start
+                // i -- start
+                // j -- size
+                for (int l = i + vm[j] - 1; l >= i + vm[j] - vm[j] / 10; --l) {
+                    for (int k = 0; k < vm.size(); ++k) {
+                        if (shingled[l] == shingled[l + vm[k]]) {
+                            
+                            cout << i << " " << vm[j] << " " << vm[k] << endl;
+                            return;
+                            
+                        }
+                    }
+
+                }
+                
+            }
+            
+        }
+    }
+    cout << "=========" << endl;
 }
 
 
@@ -159,13 +144,7 @@ int main(int argc, char **argv) {
     //    std::ifstream input(argv[1]);
     
     
-    if (0) {
-        calcInverted("AAACTGGTCAG");
-        return 0;
-    }
-    
-    
-    std::ifstream input("/Users/styskin/s2018/3/test5.fasta");
+    std::ifstream input("/Users/styskin/s2018/3/test6.fasta");
     if(!input.good()){
         std::cerr << "Error opening '"<<argv[1]<<"'. Bailing out." << std::endl;
         return -1;
