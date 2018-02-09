@@ -99,11 +99,8 @@ void parseCodon(TCodon& codon) {
 
 
 
+// FIRST PROBLEM WITH NON INTERSECTING INTERVALS
 void calc(const string& s, vii& intervals) {
-    // FIRST PROBLEM WITH NON INTERSECTING INTERVALS
-    
-    
-    // TODO: SORT BY THE END OF INTERVAL
     struct {
         bool operator()(pii a, pii b) const
         {
@@ -112,14 +109,13 @@ void calc(const string& s, vii& intervals) {
     } customLess;
     sort(intervals.begin(), intervals.end(), customLess);
     
-    
     const int M = 1 << 3;
     vi state(M), newstate(M);
     int curStart = 0;
+    int maxc = M;
     for (int i = 1; i < s.length() / 3; ++i) {
         int pos = i * 3;
         string cur = s.substr(i * 3, 3);
-        int maxc = 1;
         // SHIFT DONE INTERVALS
         {
             int shift = 0;
@@ -128,14 +124,16 @@ void calc(const string& s, vii& intervals) {
             }
             if (shift) {
                 int m = (1 << shift) - 1;
+                int checkm = 0;
                 for (int i = 0; i < M; ++i) {
                     state[i >> shift] = (i & m) == m ? state[i] : 0;
                     if (state[i >> shift]) {
-                        maxc = (i >> shift) + 1;
+                        checkm = (i >> shift) + 1;
                     }
                     state[i] = 0;
                 }
-                if (maxc == 0) {
+                if (checkm == 0) {
+                    // cannot build block
                     cout << -1 << endl;
                     return;
                 }
@@ -146,6 +144,10 @@ void calc(const string& s, vii& intervals) {
             break;
         }
         vs& amins = codon[codeA(cur)];
+        
+        for (int j = 0; j < maxc; ++j) {
+            newstate[j] = state[j];
+        }
         for (int ai = 0; ai < amins.size(); ++ai) {
             int change = 0;
             for (int j = 0; j < 3; ++j) {
@@ -171,13 +173,12 @@ void calc(const string& s, vii& intervals) {
                     break;
                 }
             }
-            for (int j = 0; j < maxc; ++j) {
-                newstate[j] = state[j];
-            }
             if (curstate > 0) {
                 for (int j = 0; j < maxc; ++j) {
-                    int nr = state[j | curstate] ? min(state[j | curstate], state[j] + change) : state[j] + change;
-                    newstate[j | curstate] = newstate[j | curstate] ? min(newstate[j | curstate], nr) : nr;
+                    if (state[j] || (j == 0 && curStart == 0)) {
+                        int nr = state[j | curstate] ? min(state[j | curstate], state[j] + change) : state[j] + change;
+                        newstate[j | curstate] = newstate[j | curstate] ? min(newstate[j | curstate], nr) : nr;
+                    }
                 }
             }
         }
@@ -187,7 +188,7 @@ void calc(const string& s, vii& intervals) {
     
 
     int shift = intervals.size() - curStart;
-    int maxc = 0;
+    maxc = 0;
     if (shift) {
         int m = (1 << shift) - 1;
         for (int i = 0; i < M; ++i) {
@@ -209,7 +210,8 @@ void calc(const string& s, vii& intervals) {
 
 
 int main(int argc, const char * argv[]) {
-    ifstream input("/Users/styskin/s2018/2/test.in");
+    ifstream input("/Users/styskin/s2018/2/input.txt");
+//    ifstream input("/Users/styskin/s2018/2/test.in");
     if(!input.good()){
         cerr << "Error opening. Bailing out." << std::endl;
         return -1;
@@ -229,7 +231,7 @@ int main(int argc, const char * argv[]) {
             input >> x >> y;
             intervals.push_back(make_pair(x, y));
         }
-//        cerr << s << " " << k << endl;
+//        cout << s << " " << k << endl;
         calc(s, intervals);
     }
     return 0;
