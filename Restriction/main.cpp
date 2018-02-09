@@ -45,7 +45,6 @@ typedef vector<pii> vii;
 typedef vector<int> vi;
 typedef vector<string> vs;
 typedef unordered_map<int, vs> TCodon;
-typedef std::bitset<32> TBS;
 
 TCodon codon;
 
@@ -113,20 +112,41 @@ void calc(const string& s, vii& intervals) {
     } customLess;
     sort(intervals.begin(), intervals.end(), customLess);
     
-    unordered_map<TBS, int> state;
     
-    state[TBS()] = 0;
-    TBS curMask;
+    const int M = 1 << 3;
+    vi state(M), newstate(M);
     int curStart = 0;
     for (int i = 1; i < s.length() / 3; ++i) {
         int pos = i * 3;
-//        cout << "POS: " << pos << endl;
-//        cout << "MASK: " << curMask << endl;
         string cur = s.substr(i * 3, 3);
+        int maxc = 1;
+        // SHIFT DONE INTERVALS
+        {
+            int shift = 0;
+            for (; curStart < intervals.size() && intervals[curStart].second - 1 < pos; ++curStart) {
+                ++shift;
+            }
+            if (shift) {
+                int m = (1 << shift) - 1;
+                for (int i = 0; i < M; ++i) {
+                    state[i >> shift] = (i & m) == m ? state[i] : 0;
+                    if (state[i >> shift]) {
+                        maxc = (i >> shift) + 1;
+                    }
+                    state[i] = 0;
+                }
+                if (maxc == 0) {
+                    cout << -1 << endl;
+                    return;
+                }
+            }
+        }
+        if (curStart == intervals.size()) {
+            // ALL DONE
+            break;
+        }
         vs& amins = codon[codeA(cur)];
-        
         for (int ai = 0; ai < amins.size(); ++ai) {
-            TBS curstate;
             int change = 0;
             for (int j = 0; j < 3; ++j) {
                 if (amins[ai][j] != cur[j]) {
@@ -134,81 +154,55 @@ void calc(const string& s, vii& intervals) {
                 }
             }
             
+            int curstate = 0;
             // find start for pos instead of continue
-            for (int l = curStart; l < intervals.size(); ++l) {
-                if(intervals[l].second - 1 < pos) {
-                    curStart = l;
-                    curMask.set(l);
-                    continue;
-                }
-                int a = max(intervals[l].first - 1, pos);
-                int b = min(intervals[l].second - 1, pos + 2);
-                
-                if (a <= b) {
-                    // check presicely intersection
-                    bool ch = false;
-                    for (int j = 0; j < 3; ++j) {
-                        if (amins[ai][j] != cur[j] && intervals[l].first - 1 <= pos + j && pos + j <= intervals[l].second - 1) {
-                            ch = true;
-                            break;
-                        }
-                    }
-                    if (ch) {
-                        // interval[l] has change of size: change
-                        curstate.set(l);
+            for (int l = curStart; l < intervals.size() && intervals[l].first - 1 <= pos + 2; ++l) {
+                bool ch = false;
+                for (int j = 0; j < 3; ++j) {
+                    if (amins[ai][j] != cur[j] && intervals[l].first - 1 <= pos + j && pos + j <= intervals[l].second - 1) {
+                        ch = true;
+                        break;
                     }
                 }
-                
+                if (ch) {
+                    curstate |= 1 << (l - curStart);
+                }
                 if (intervals[l].first - 1 > pos + 3) {
                     break;
                 }
             }
-            // we have curstate and size of change
-//            cout << "C: " << curstate << " " << change << endl;
-            unordered_map<TBS, int>::iterator nit = state.find(curstate);
-            if (nit != state.end()) {
-                nit->second = min(nit->second, change);
+            for (int j = 0; j < maxc; ++j) {
+                newstate[j] = state[j];
             }
-            unordered_map<TBS, int> newState;
-            for (const auto& it : state) {
-                if ((it.first & curMask) == curMask) {
-                    newState.insert(it);
+            if (curstate > 0) {
+                for (int j = 0; j < maxc; ++j) {
+                    int nr = state[j | curstate] ? min(state[j | curstate], state[j] + change) : state[j] + change;
+                    newstate[j | curstate] = newstate[j | curstate] ? min(newstate[j | curstate], nr) : nr;
                 }
             }
-            for (const auto& it : state) {
-                if ((it.first & curMask) != curMask) {
-                    continue;
-                }
-                TBS s = it.first | curstate;
-//                cout << "U: " << s << " " << it.second + change << endl;
-                unordered_map<TBS, int>::iterator nit = newState.find(s);
-                if (nit != newState.end()) {
-                    nit->second = min(nit->second, it.second + change);
-                } else {
-                    newState[s] = it.second + change;
-                }
+        }
+        state.swap(newstate);
+        fill(newstate.begin(), newstate.end(), 0);
+    }
+    
+
+    int shift = intervals.size() - curStart;
+    int maxc = 0;
+    if (shift) {
+        int m = (1 << shift) - 1;
+        for (int i = 0; i < M; ++i) {
+            state[i >> shift] = (i & m) == m ? state[i] : 0;
+            if (state[i >> shift]) {
+                maxc = (i >> shift) + 1;
             }
-            state.swap(newState);
-//            cout << state.size() << endl;
+            state[i] = 0;
+        }
+        if (maxc == 0) {
+            cout << -1 << endl;
+            return;
         }
     }
-    
-    TBS finalS;
-    for (int i = 0; i < intervals.size(); ++i) {
-        finalS.set(i);
-    }
-    
-//    for (const auto&  it : state) {
-//        cout << it.first << " " << it.second << endl;
-//    }
-    
-    unordered_map<TBS, int>::iterator nit = state.find(finalS);
-    if (nit != state.end()) {
-        cout << nit->second << endl;
-    } else {
-        cout << -1 << endl;
-    }
-    
+    cout << state[0] << endl;
 }
 
 
