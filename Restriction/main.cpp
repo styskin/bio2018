@@ -104,12 +104,30 @@ void calc(const string& s, vii& intervals) {
     struct {
         bool operator()(pii a, pii b) const
         {
-            return a.second < b.second;
+            return a.second == b.second ? a.first > b.first : a.second < b.second;
         }
     } customLess;
     sort(intervals.begin(), intervals.end(), customLess);
     
-    const int M = 1 << 3;
+    
+    
+    {
+        // THROW MAJORATED INTERVALS
+        int d = 0, mxa = 0;
+        for (int i = 1; i < intervals.size(); ++i) {
+            if (intervals[i].first >= mxa) {
+                intervals[i - d] = intervals[i];
+            } else {
+                // skip this
+                ++d;
+            }
+            mxa = max(intervals[i].first, mxa);
+        }
+        intervals.resize(intervals.size() - d);
+    }
+    
+    // 8 intersected intervals MAX 
+    const int M = 1 << 8;
     vi state(M), newstate(M);
     int curStart = 0;
     int maxc = M;
@@ -211,7 +229,7 @@ void calc(const string& s, vii& intervals) {
 
 int main(int argc, const char * argv[]) {
     ifstream input("/Users/styskin/s2018/2/input.txt");
-//    ifstream input("/Users/styskin/s2018/2/test.in");
+//    ifstream input("/Users/styskin/s2018/2/test2.in");
     if(!input.good()){
         cerr << "Error opening. Bailing out." << std::endl;
         return -1;
@@ -231,7 +249,7 @@ int main(int argc, const char * argv[]) {
             input >> x >> y;
             intervals.push_back(make_pair(x, y));
         }
-//        cout << s << " " << k << endl;
+//        cout << s.length() << " " << k << endl;
         calc(s, intervals);
     }
     return 0;
