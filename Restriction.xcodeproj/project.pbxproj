@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		EA3B750C202CE46200148A0D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA3B750B202CE46200148A0D /* main.cpp */; };
+		EA42FFCE202F29F900CD192B /* task3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA42FFCD202F29F900CD192B /* task3.cpp */; };
+		EA42FFD1202F2C7800CD192B /* aho.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA42FFCF202F2C7800CD192B /* aho.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +27,9 @@
 /* Begin PBXFileReference section */
 		EA3B7508202CE46200148A0D /* Restriction */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Restriction; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA3B750B202CE46200148A0D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		EA42FFCD202F29F900CD192B /* task3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = task3.cpp; sourceTree = "<group>"; };
+		EA42FFCF202F2C7800CD192B /* aho.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aho.cpp; sourceTree = "<group>"; };
+		EA42FFD0202F2C7800CD192B /* aho.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = aho.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +63,9 @@
 			isa = PBXGroup;
 			children = (
 				EA3B750B202CE46200148A0D /* main.cpp */,
+				EA42FFCD202F29F900CD192B /* task3.cpp */,
+				EA42FFCF202F2C7800CD192B /* aho.cpp */,
+				EA42FFD0202F2C7800CD192B /* aho.hpp */,
 			);
 			path = Restriction;
 			sourceTree = "<group>";
@@ -120,6 +128,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EA42FFD1202F2C7800CD192B /* aho.cpp in Sources */,
+				EA42FFCE202F29F900CD192B /* task3.cpp in Sources */,
 				EA3B750C202CE46200148A0D /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -249,6 +259,7 @@
 				EA3B7511202CE46200148A0D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

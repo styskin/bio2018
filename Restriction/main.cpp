@@ -16,6 +16,8 @@
 
 using namespace std;
 
+namespace {
+
 const char * CODON = "\
  GCU, GCC, GCA, GCG \n\
  CGU, CGC, CGA, CGG, AGA, AGG \n\
@@ -225,9 +227,9 @@ void calc(const string& s, vii& intervals) {
 }
 
 
+};
 
-
-int main(int argc, const char * argv[]) {
+int mainTask2(int argc, const char * argv[]) {
     ifstream input("/Users/styskin/s2018/2/input.txt");
 //    ifstream input("/Users/styskin/s2018/2/test2.in");
     if(!input.good()){
